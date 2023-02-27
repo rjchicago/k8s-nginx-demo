@@ -1,0 +1,23 @@
+apiVersion: k3d.io/v1alpha4
+kind: Simple
+metadata:
+  name: local
+servers: 1
+agents: 3
+image: rancher/k3s:latest
+ports:
+  - port: 8080:80 # same as `--port '8080:80@loadbalancer'`
+    nodeFilters:
+      - loadbalancer
+options:
+  k3d:
+    wait: true
+    timeout: "300s"
+  k3s:
+    extraArgs:
+      - arg: --node-taint=node-role.kubernetes.io/master:NoSchedule
+        nodeFilters:
+          - server:*
+  kubeconfig:
+    updateDefaultKubeconfig: true # add cluster to default Kubeconfig; same as `--kubeconfig-update-default` (default: true)
+    switchCurrentContext: true # set current-context to new cluster's context; same as `--kubeconfig-switch-context` (default: true)
