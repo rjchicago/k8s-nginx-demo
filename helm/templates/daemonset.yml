@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.daemonSet.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.pods.label }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.pods.label }}
+    spec:
+      containers:
+        - name: {{ .Values.pods.label }}
+          image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: {{ .Values.pods.volumeMount.path }}
+              readOnly: {{ .Values.pods.volumeMount.readOnly }}
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: config
+          projected:
+            sources:
+             {{- range $path, $_ :=  .Files.Glob  .Values.configMap.glob }}
+              - configMap:
+                  name: {{ base $path }}
+                  items:
+                    - key: {{ base $path }}
+                      path: {{ base $path }}
+             {{- end }}

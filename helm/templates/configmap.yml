@@ -1,0 +1,13 @@
+{{- $ns := .Values.namespace }}
+{{- range $path, $_ :=  .Files.Glob .Values.configMap.glob }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ base $path}}
+  namespace: {{ $ns }}
+data:
+{{ base $path | indent 2 }}: |
+{{ $.Files.Get $path | indent 4 }}
+immutable: true
+{{- end }}

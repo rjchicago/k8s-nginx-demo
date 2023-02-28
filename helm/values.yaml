@@ -1,0 +1,27 @@
+
+namespace: nginx-demo2
+
+image:
+  repo: nginx
+  tag: 1.23-alpine
+  pullPolicy: Always
+
+configMap:
+  glob: config/*
+
+service:
+  name: demo
+  port: 80
+
+ingress:
+  name: demo
+  path: /
+
+daemonSet:
+  name: demo
+
+pods:
+  label: nginx-demo
+  volumeMount:
+    path: /etc/nginx/templates
+    readOnly: true
