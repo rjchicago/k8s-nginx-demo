@@ -6,7 +6,7 @@ kubectl config use-context ${CONTEXT}
 
 export NAMESPACE=${NAMESPACE:-nginx-demo}
 
-source $(dirname $0s)/scripts/utils.sh
+source $(dirname $0s)/utils.sh
 
 # create namespace
 kubectl create ns $NAMESPACE -o yaml --dry-run=client | kubectl apply -f -
@@ -28,6 +28,6 @@ echo "\nMONITORING ROLLOUT:"
 timeout 30s kubectl rollout status ds/demo -n $NAMESPACE && echo_passed || echo_failed
 
 # verification
-timeout 20s $(dirname $0)/scripts/verify-health.sh && echo_passed || echo_failed
+timeout 20s $(dirname $0)/verify-health.sh && echo_passed || echo_failed
 
 echo "\nDONE!\n"
