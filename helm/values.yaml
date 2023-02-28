@@ -1,27 +1,6 @@
-
-namespace: nginx-demo2
-
-image:
-  repo: nginx
-  tag: 1.23-alpine
-  pullPolicy: Always
-
-configMap:
-  glob: config/*
-
+image: nginx:1.23-alpine
+configGlob: config/*
 service:
-  name: demo
+  type: ClusterIP
   port: 80
-
-ingress:
-  name: demo
-  path: /
-
-daemonSet:
-  name: demo
-
-pods:
-  label: nginx-demo
-  volumeMount:
-    path: /etc/nginx/templates
-    readOnly: true
+mountPath: /etc/nginx/templates

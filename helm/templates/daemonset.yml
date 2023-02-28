@@ -2,12 +2,12 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: {{ .Values.daemonSet.name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}-ds
+  namespace: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.pods.label }}
+      app: {{ .Release.Name }}
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
@@ -15,21 +15,22 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .Values.pods.label }}
+        app: {{ .Release.Name }}
     spec:
       containers:
-        - name: {{ .Values.pods.label }}
-          image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        - name: {{ .Release.Name }}
+          image: {{ .Values.image }}
+          imagePullPolicy: Always
           ports:
             - name: http
               protocol: TCP
               containerPort: 80
           volumeMounts:
             - name: config
-              mountPath: {{ .Values.pods.volumeMount.path }}
-              readOnly: {{ .Values.pods.volumeMount.readOnly }}
+              mountPath: {{ .Values.mountPath }}
+              readOnly: true
           env:
+            # https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/v1/conversion.go#L39-L48
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
@@ -54,7 +55,7 @@ spec:
         - name: config
           projected:
             sources:
-             {{- range $path, $_ :=  .Files.Glob  .Values.configMap.glob }}
+             {{- range $path, $_ :=  .Files.Glob  .Values.configGlob }}
               - configMap:
                   name: {{ base $path }}
                   items:
